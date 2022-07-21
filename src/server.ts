@@ -1,4 +1,5 @@
 import express from 'express';
+import { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
@@ -39,8 +40,8 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
   } );
 
 
-  app.get("/filteredimage", async (req, res) => {
-    let image_url = req.query.image_url; 
+  app.get("/filteredimage", async (req: Request, res: Response) => {
+    let image_url:string = req.query.image_url; 
     let token = req.headers.authorization.split(' ')[1];
     if (security_token !== token) {
       return res.status(401).send("Invalid credentials")
@@ -52,7 +53,9 @@ import {filterImageFromURL, deleteLocalFiles} from './util/util';
 
     let filteredpath = await filterImageFromURL(image_url);
     res.sendFile(filteredpath);
-    await deleteLocalFiles([filteredpath]);
+    res.on('finish',() => {
+      deleteLocalFiles([filteredpath])
+    });
 
   })
   
